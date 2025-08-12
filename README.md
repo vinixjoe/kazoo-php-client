@@ -1,5 +1,7 @@
 # Kazoo PHP Client
 
+By: Joseph Watson - jwatson@vinixglobal.com
+
 A lightweight **client library** (not a framework bundle/SDK monolith) for 2600Hz Kazoo APIs.
 - PHP **8.2+**
 - Transport-agnostic via **PSR-18**; default example uses Guzzle 7
