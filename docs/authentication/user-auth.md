@@ -10,3 +10,18 @@ print_r($kazoo->accounts()->current());
 
 **Common pitfalls**
 - Wrong `realm` yields `invalid_auth`. Double‑check the SIP realm.
+
+
+## Disable token caching
+You can opt out of token caching either via code or an environment variable:
+
+```php
+$auth = (new \Kazoo\Auth\UserAuth($user, $pass, $realm))
+  ->disableCache(); // or ->setCacheEnabled(false)
+```
+
+Or set an environment variable before running your script:
+
+```bash
+export KAZOO_TOKEN_CACHE=off   # accepted values: off, 0, false, no
+```

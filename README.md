@@ -1,7 +1,5 @@
 # Kazoo PHP Client
 
-By: Joseph Watson - jwatson@vinixglobal.com
-
 A lightweight **client library** (not a framework bundle/SDK monolith) for 2600Hz Kazoo APIs.
 - PHP **8.2+**
 - Transport-agnostic via **PSR-18**; default example uses Guzzle 7
@@ -189,3 +187,31 @@ foreach ($p->chunk(['paginate' => 'true'], 200) as $batch) {
 
 
 See **docs/overview/index.md** to dive into the full documentation.
+
+
+See **docs/compatibility/index.md** for legacy vs 5.4 behavior and a probing example.
+
+
+## Token caching & logging (build014)
+Attach a PSR-16 cache (filesystem) and optional PSR-3 logger:
+
+```php
+use Kazoo\Util\FileCache;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
+$cache = new FileCache(__DIR__ . '/.cache');
+$logger = new Logger('kazoo'); $logger->pushHandler(new StreamHandler('php://stdout'));
+
+$auth = new Kazoo\Auth\UserAuth(getenv('KAZOO_USER'), getenv('KAZOO_PASS'), getenv('KAZOO_REALM'));
+$auth->setCache($cache, 7200);
+
+$kazoo->setLogger($logger);
+```
+
+
+### Token cache selection (optional)
+```php
+use Kazoo\Util\CacheFactory;
+$cache = CacheFactory::fromEnv(); // filesystem by default, APCu/Memcached if configured
+```

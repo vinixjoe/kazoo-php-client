@@ -72,3 +72,37 @@ public function unassign(string $number): array
     return $this->update($number, ['assigned' => false]);
 }
 }
+
+
+    /** Batch add phone numbers (account-scoped collection) */
+    public function addMany(array $numbers): array
+    {
+        // Prefer account-scoped path if available
+        $path = '/v2/phone_numbers/collection';
+        if (method_exists($this->sdk, 'accountId') && $this->sdk->accountId()) {
+            $path = '/v2/accounts/' . rawurlencode($this->sdk->accountId()) . '/phone_numbers/collection';
+        }
+        return $this->sdk->request('PUT', $path, [], ['data' => ['numbers' => array_values($numbers)]]);
+    }
+
+    /** Batch update phone numbers */
+    public function updateMany(array $updates): array
+    {
+        $path = '/v2/phone_numbers/collection';
+        if (method_exists($this->sdk, 'accountId') && $this->sdk->accountId()) {
+            $path = '/v2/accounts/' . rawurlencode($this->sdk->accountId()) . '/phone_numbers/collection';
+        }
+        return $this->sdk->request('POST', $path, [], ['data' => $updates]);
+    }
+
+    /** Batch delete phone numbers */
+    public function deleteMany(array $numbers, bool $hard = false): array
+    {
+        $qs = $hard ? '?hard=true' : '';
+        $path = '/v2/phone_numbers/collection' . $qs;
+        if (method_exists($this->sdk, 'accountId') && $this->sdk->accountId()) {
+            $path = '/v2/accounts/' . rawurlencode($this->sdk->accountId()) . '/phone_numbers/collection' . $qs;
+        }
+        // Some deployments accept body for DELETE; others expect query/body. We'll send body.
+        return $this->sdk->request('DELETE', $path, [], ['data' => ['numbers' => array_values($numbers)]]);
+    }

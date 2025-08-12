@@ -10,7 +10,11 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Kazoo\Auth\AuthInterface;
 use Kazoo\Http\Retry;
+use Psr\Log\LoggerInterface;
+use Psr\SimpleCache\CacheInterface;
 use Kazoo\Http\ResponseDecoder;
+use Kazoo\Http\PathBuilder;
+use Kazoo\Config\Options;
 use Kazoo\Exceptions\HttpException;
 use Kazoo\Exceptions\RateLimitException;
 use Kazoo\Exceptions\InvalidAuthException;
@@ -31,12 +35,25 @@ use Kazoo\Resources\Callflows;
  */
 final class SDK
 {
+    private array $redactHeaders = ['authorization', 'x-auth-token'];
+
+    /** @var \Kazoo\Config\Options */
+    private $options;
+    /** @var \Kazoo\Http\PathBuilder */
+    private $paths;
+
     private string $baseUrl;
+    private ?string $accountId = null;
+    /** @var 'auto'|'legacy'|'v5_4' */
+    private string $apiVersionMode = 'auto';
     private ClientInterface $httpClient;
     private RequestFactoryInterface $requestFactory;
     private StreamFactoryInterface $streamFactory;
     private AuthInterface $auth;
     private Retry $retry;
+    private ?LoggerInterface $logger = null;
+    private ?CacheInterface $cache = null;
+    private ?string $accountId = null;
     private ResponseDecoder $decoder;
 
 
@@ -45,7 +62,8 @@ final class SDK
         ClientInterface $httpClient,
         RequestFactoryInterface $requestFactory,
         StreamFactoryInterface $streamFactory,
-        AuthInterface $auth
+        AuthInterface $auth,
+        ?Options $options = null
     ) {
         $this->baseUrl = rtrim($baseUrl, '/');
         $this->httpClient = $httpClient;
@@ -54,6 +72,8 @@ final class SDK
         $this->auth = $auth;
         $this->retry = new Retry();
         $this->decoder = new ResponseDecoder();
+        $this->options = $options ?? new Options('auto', null);
+        $this->paths = new PathBuilder($this->options);
     }
 
 }
@@ -196,12 +216,56 @@ final class SDK
             return $this->request('GET', $path . $qs);
         });
     }
-public function accounts(): Accounts
+
+    public function setAccountId(string $accountId): void
+    {
+        $this->options = $this->options->withAccountId($accountId);
+        $this->paths->setOptions($this->options);
+    }
+
+    public function accountId(): ?string
+    {
+        return $this->options->accountId();
+    }
+
+    /** @param 'auto'|'v5_4'|'legacy' $mode */
+    public function setApiVersionMode(string $mode): void
+    {
+        $this->options = $this->options->withApiVersionMode($mode);
+        $this->paths->setOptions($this->options);
+    }
+
+public function setLogger(?LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+    }
+
+    public function setCache(?CacheInterface $cache): void
+    {
+        $this->cache = $cache;
+    }
+
+    public function setAccountId(?string $accountId): void
+    {
+        $this->accountId = $accountId;
+    }
+
+    public function accountId(): ?string
+    {
+        return $this->accountId;
+    }
+
+    public function accounts(): Accounts
     {
         return new Accounts($this);
     }
 
     /** @return \Kazoo\Resources\Users */
+    public function baseUrl(): string
+    {
+        return $this->baseUrl;
+    }
+
     public function users(): Users
     {
         return new Users($this);
