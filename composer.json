@@ -1,0 +1,44 @@
+{
+  "name": "kazoo-php-client",
+  "description": "Kazoo PHP Client \u2014 Lightweight PSR-18 library for the Kazoo APIs",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Kazoo\\": "src/"
+    }
+  },
+  "require": {
+    "php": "^8.2",
+    "psr/http-client": "^1.0",
+    "psr/http-message": "^1.1",
+    "psr/http-factory": "^1.0",
+    "guzzlehttp/guzzle": "^7.8.2",
+    "nyholm/psr7": "^1.8"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.3",
+    "phpstan/phpstan": "^1.11",
+    "rector/rector": "^1.1",
+    "friendsofphp/php-cs-fixer": "^3.59"
+  },
+  "suggest": {
+    "symfony/http-client": "Alternative PSR-18 client via symfony-psr18-adapter"
+  },
+  "minimum-stability": "stable",
+  "config": {
+    "sort-packages": true
+  },
+  "scripts": {
+    "test": "phpunit",
+    "stan": "phpstan analyse src --level=max",
+    "cs:fix": "php-cs-fixer fix --using-cache=no",
+    "rector": "rector process"
+  },
+  "bin": [],
+  "authors": [
+    {
+      "name": "Joseph Watson"
+    }
+  ]
+}
